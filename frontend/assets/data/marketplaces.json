@@ -1,0 +1,21 @@
+[
+    {
+        "name": "Opensea",
+        "image": "opensea-icon.svg",
+        "base_url": "https://opensea.io/assets/",
+        "separation": "/"
+    },
+    {
+        "name": "Looksrare",
+        "image": "looksrare-icon.svg",
+        "base_url": "https://looksrare.org/collections/"
+        ,
+        "separation": "/"
+    },
+    {
+        "name": "Rarible",
+        "image": "rarible-icon.svg",
+        "base_url": "https://rarible.com/token/",
+        "separation": ":"
+    }
+]

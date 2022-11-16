@@ -1,0 +1,24 @@
+{
+  "name": "edge-subgraph",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "create": "graph create --node https://api.thegraph.com/deploy/ nlbsygnum/SygnumERC115",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ nlbsygnum/SygnumERC1155",
+    "run-local": "export $(cat .env) && docker-compose up",
+    "do-all-shit-local": "yarn && yarn codegen && yarn create-local && yarn deploy-local",
+    "do-all-hosted": "yarn && yarn codegen && yarn build && yarn deploy",
+    "create-local": "graph create --node http://localhost:8020/ sygnum/purrveyor-subgraph",
+    "remove-local": "graph remove --node http://localhost:8020/ sygnum/purrveyor-subgraph",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 sygnum/purrveyor-subgraph"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.27.0",
+    "@graphprotocol/graph-ts": "0.27.0",
+    "@types/uuid": "^8.3.3",
+    "ethers": "^5.6.9",
+    "matchstick-as": "^0.5.0",
+    "uuid": "^8.3.2"
+  }
+}

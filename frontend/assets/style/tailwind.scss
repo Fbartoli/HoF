@@ -1,0 +1,17 @@
+@import 'style/fonts/fonts.css';
+/* futura */
+@import url('https://use.typekit.net/oct5hqm.css');
+/* cubano */
+/* @import url('https://use.typekit.net/uhg0zdt.css'); */
+/* bebas */
+/* @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700;900&display=swap'); */
+
+@import 'tailwindcss/base';
+@import 'style/base/base.scss';
+
+@import 'tailwindcss/components';
+@import 'style/components/adaptive_font.scss';
+@import 'style/components/transition.scss';
+// @import 'style/components/extension.scss';
+
+@import 'tailwindcss/utilities';

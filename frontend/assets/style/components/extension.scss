@@ -1,0 +1,9 @@
+@import 'tailwindcss/components';
+
+@layer components {
+    /* custom */
+    .no-user-interaction {
+        pointer-events: none;
+    }
+  
+  }

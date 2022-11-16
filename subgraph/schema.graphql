@@ -1,0 +1,47 @@
+type Collection @entity {
+  id: ID!
+  maxTokens: BigInt!
+  baseUri: String!
+}
+
+type Account @entity {
+  id: ID!
+  balances: [Balance!]! @derivedFrom(field: "account")
+}
+
+type Token @entity {
+  id: ID!
+  collectionId: String!
+  identifier: BigInt!
+  URI: String!
+  totalSupply: BigInt!
+  circulatingSupply: BigInt!
+  balances: [Balance!]! @derivedFrom(field: "token")
+}
+
+type Mint @entity {
+  id: ID!
+  identifier: BigInt!
+  to: Account!
+  amount: BigInt!
+}
+
+type Burn @entity {
+  id: ID!
+  identifier: BigInt!
+  from: Account!
+  amount: BigInt!
+}
+
+type Balance @entity {
+  id: ID!
+  token: Token!
+  account: Account!
+  value: BigInt!
+}
+
+type Transaction @entity {
+  id: ID!
+  timestamp: BigInt!
+  blocknumber: BigInt!
+}
