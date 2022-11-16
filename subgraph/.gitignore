@@ -1,0 +1,6 @@
+git branch -M main/node_modules
+/generated
+/build
+/data
+
+.env
