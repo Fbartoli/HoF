@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+
 /*
             ___                         ___
             (o o)                       (o o)
@@ -12,10 +12,11 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
             --m-m-------------------------m-m--
 */
 /// @custom:security-contact florent.bartoli@sygnum.com
-contract HoF is ERC1155, Ownable, ERC1155Supply {
+contract HoF is ERC1155, Ownable {
     using Strings for uint256;
     string _baseUri;
     address _trustedForwarder;
+    mapping(address => uint[]) _rewards; //tokenId to be claimed
 
     constructor(string memory baseUri, address trustedForwarder) ERC1155("") {
         _baseUri = baseUri;
@@ -30,22 +31,21 @@ contract HoF is ERC1155, Ownable, ERC1155Supply {
         _trustedForwarder = trustedForwarder;
     }
 
-    function mint(
-        address account,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public onlyOwner {
-        _mint(account, id, amount, data);
+    function grantRewards (address[] memory addrs, uint[] memory ids) public onlyOwner {
+        require(addrs.length == ids.length);
+        for (uint256 index = 0; index < addrs.length; index++) {
+            require(ids[index] != 0);
+            _rewards[addrs[index]].push(ids[index]);
+        }
     }
 
-    function mintBatch(
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) public onlyOwner {
-        _mintBatch(to, ids, amounts, data);
+    function mint() public {
+        uint[] memory rewardsArray = _rewards[_msgSender()];
+        require(rewardsArray.length > 0);
+        delete rewardsArray;
+        for (uint256 index = 0; index < rewardsArray.length; index++) {
+            _mint(_msgSender(), rewardsArray[index], 1, '0x');
+        }
     }
 
     function uri(uint256 id)
@@ -60,15 +60,27 @@ contract HoF is ERC1155, Ownable, ERC1155Supply {
 
     // The following functions are overrides required by Solidity.
 
-    function _beforeTokenTransfer(
-        address operator,
-        address from,
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) internal override(ERC1155, ERC1155Supply) {
-        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+    function safeTransferFrom(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes memory
+    ) public virtual override {
+        revert();
+    }
+
+    /**
+     * @dev See {IERC1155-safeBatchTransferFrom}.
+     */
+    function safeBatchTransferFrom(
+        address,
+        address,
+        uint256[] memory,
+        uint256[] memory,
+        bytes memory
+    ) public virtual override {
+        revert();
     }
 
     function isTrustedForwarder(address forwarder)
