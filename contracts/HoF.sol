@@ -13,6 +13,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 */
 /// @custom:security-contact florent.bartoli@sygnum.com
 contract HoF is ERC1155, Ownable {
+    event NewRewards(address[] addrs, uint[] ids);
     using Strings for uint256;
     string _baseUri;
     address _trustedForwarder;
@@ -37,6 +38,7 @@ contract HoF is ERC1155, Ownable {
             require(ids[index] != 0);
             _rewards[addrs[index]].push(ids[index]);
         }
+        emit NewRewards(addrs, ids);
     }
 
     function mint() public {

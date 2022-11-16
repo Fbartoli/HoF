@@ -11,19 +11,18 @@ const main = async () => {
 
   console.log(` 🛰  Deploying: nft contract, STEP 2`);
   const NFT = await ethers.getContractFactory(contractName);
-  let nft = await NFT.deploy();
+  let nft = await NFT.deploy('https://ipfs.io/ipfs/QmNdQpZp7vmv8CZtUgLoCxnYPZQq5LxPQTshvPZPJh5HKJ/', '0x0000000000000000000000000000000000000000');
   console.log(
     " 📄",
     chalk.cyan("nft"),
     "deployed to:",
     chalk.magenta(nft.address),
   );
-  await nft.claim()
   // Verify implementation on etherscan
   console.log(`Attempting to verify implementation contract with etherscan`);
-
+  await new Promise((resolve) => setTimeout(resolve, 60000));
   try {
-    await hre.run("verify:verify", { address: pay.address });
+    await hre.run("verify:verify", { address: nft.address, constructorArguments: ['https://ipfs.io/ipfs/QmNdQpZp7vmv8CZtUgLoCxnYPZQq5LxPQTshvPZPJh5HKJ/', '0x0000000000000000000000000000000000000000'] }, );
   } catch (error) {
     console.log(error)
   }
