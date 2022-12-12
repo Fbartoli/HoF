@@ -3,7 +3,8 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
 /*
             ___                         ___
@@ -11,42 +12,49 @@ import "@openzeppelin/contracts/access/Ownable.sol";
             (  V  ) SYGNUM HALL OF FAME (  V  )
             --m-m-------------------------m-m--
 */
-contract HoF is ERC1155, Ownable {
+contract HoF is ERC1155, AccessControl, ERC1155Supply {
     event NewRewards(address[] addrs, uint[] ids);
     using Strings for uint256;
-    string _name = 'Hall of Fame';
-    string _symbol = 'HoF';
+    string public name = 'Hall of Fame';
+    string public symbol = 'HoF';
     address _trustedForwarder;
     mapping(address => uint[]) _rewards; //tokenId to be claimed
+    bytes32 public constant GRANTER_ROLE = keccak256("GRANTER_ROLE");
 
-    constructor(address trustedForwarder) ERC1155("") {
+    error SBT();
+    error ArrayNotMatching();
+    error NoRewards();
+    error DoesntExist();
+
+    constructor(address trustedForwarder) ERC1155("ipfs://QmY4r4sbYErYQDCRQDj5R7QhoMxypMnEFP7FFEud5WKc4H/") {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(GRANTER_ROLE, msg.sender);
         _trustedForwarder = trustedForwarder;
     }
 
-    function setURI(string memory newuri) public onlyOwner {
+    function setURI(string memory newuri) public onlyRole(GRANTER_ROLE) {
         _setURI(newuri);
     }
 
-    function setForwarder(address trustedForwarder) public onlyOwner {
+    function setForwarder(address trustedForwarder) public onlyRole(GRANTER_ROLE) {
         _trustedForwarder = trustedForwarder;
     }
 
-    function grantRewards (address[] memory addrs, uint[] memory ids) public onlyOwner {
-        require(addrs.length == ids.length);
+    function grantRewards (address[] memory addrs, uint[] memory ids) public onlyRole(GRANTER_ROLE) {
+        if(addrs.length != ids.length) revert ArrayNotMatching();
         for (uint256 index = 0; index < addrs.length; index++) {
-            require(ids[index] != 0);
             _rewards[addrs[index]].push(ids[index]);
         }
         emit NewRewards(addrs, ids);
     }
 
-    function mint() public {
-        uint[] memory rewardsArray = _rewards[_msgSender()];
-        require(rewardsArray.length > 0);
+    function mint(address receiver) public {
+        uint[] memory rewardsArray = _rewards[receiver];
+        if(rewardsArray.length == 0) revert NoRewards();
         for (uint256 index = 0; index < rewardsArray.length; index++) {
-            _mint(_msgSender(), rewardsArray[index], 1, '0x');
+            _mint(receiver, rewardsArray[index], 1, '0x');
         }
-        delete _rewards[_msgSender()];
+        delete _rewards[receiver];
     }
 
     function uri(uint256 id)
@@ -56,36 +64,30 @@ contract HoF is ERC1155, Ownable {
         override
         returns (string memory)
     {
+        if (!ERC1155Supply.exists(id)) revert DoesntExist();
         string memory uri_ = super.uri(id);
-        return
-            bytes(uri_).length > 0
-                ? string(abi.encodePacked(uri_, id.toString()))
-                : "";
+        return string(abi.encodePacked(uri_, id.toString()));
     }
 
     // The following functions are overrides required by Solidity.
 
-    function safeTransferFrom(
-        address,
-        address,
-        uint256,
-        uint256,
-        bytes memory
-    ) public virtual override {
-        revert();
+    function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
+        internal
+        override(ERC1155, ERC1155Supply)
+    {
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+         if (from != address(0) && to != address(0)) {
+            revert SBT();
+        }
     }
 
-    /**
-     * @dev See {IERC1155-safeBatchTransferFrom}.
-     */
-    function safeBatchTransferFrom(
-        address,
-        address,
-        uint256[] memory,
-        uint256[] memory,
-        bytes memory
-    ) public virtual override {
-        revert();
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC1155, AccessControl)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 
     function isTrustedForwarder(address forwarder)
