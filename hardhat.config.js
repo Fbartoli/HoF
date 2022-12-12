@@ -1,8 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 require("hardhat/types");
-require("@openzeppelin/hardhat-upgrades");
-require("solidity-coverage");
 require("hardhat-contract-sizer");
 require("@nomiclabs/hardhat-etherscan");
 require("hardhat-gas-reporter");
@@ -72,7 +70,7 @@ module.exports = {
 
     // Obtain one at https://etherscan.io/
     // polygon
-    apiKey: "V8M7M5I82SDEFUH3IF2HIEHGUVETVCX4GW",
+    apiKey: `${process.env.POLYGONSCAN_API}`,
     // apiKey: `${process.env.ETHERSCAN_API}`
   },
 };

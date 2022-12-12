@@ -11,21 +11,20 @@ import "@openzeppelin/contracts/access/Ownable.sol";
             (  V  ) SYGNUM HALL OF FAME (  V  )
             --m-m-------------------------m-m--
 */
-/// @custom:security-contact florent.bartoli@sygnum.com
 contract HoF is ERC1155, Ownable {
     event NewRewards(address[] addrs, uint[] ids);
     using Strings for uint256;
-    string _baseUri;
+    string _name = 'Hall of Fame';
+    string _symbol = 'HoF';
     address _trustedForwarder;
     mapping(address => uint[]) _rewards; //tokenId to be claimed
 
-    constructor(string memory baseUri, address trustedForwarder) ERC1155("") {
-        _baseUri = baseUri;
+    constructor(address trustedForwarder) ERC1155("") {
         _trustedForwarder = trustedForwarder;
     }
 
     function setURI(string memory newuri) public onlyOwner {
-        _baseUri = newuri;
+        _setURI(newuri);
     }
 
     function setForwarder(address trustedForwarder) public onlyOwner {
@@ -44,10 +43,10 @@ contract HoF is ERC1155, Ownable {
     function mint() public {
         uint[] memory rewardsArray = _rewards[_msgSender()];
         require(rewardsArray.length > 0);
-        delete rewardsArray;
         for (uint256 index = 0; index < rewardsArray.length; index++) {
             _mint(_msgSender(), rewardsArray[index], 1, '0x');
         }
+        delete _rewards[_msgSender()];
     }
 
     function uri(uint256 id)
@@ -57,7 +56,11 @@ contract HoF is ERC1155, Ownable {
         override
         returns (string memory)
     {
-        return string(abi.encodePacked(_baseUri, id.toString()));
+        string memory uri_ = super.uri(id);
+        return
+            bytes(uri_).length > 0
+                ? string(abi.encodePacked(uri_, id.toString()))
+                : "";
     }
 
     // The following functions are overrides required by Solidity.
